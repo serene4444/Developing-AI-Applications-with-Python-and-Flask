@@ -1,38 +1,5 @@
-from flask import Flask, make_response
+from flask import Flask, make_response, request
 
-app = Flask(__name__)
-
-
-@app.route("/")
-def hello_world():
-    """return 'Hello World' message with a status code of 200
-
-    Returns:
-        string: Hello World
-        status code: 200
-    """
-    resp = make_response({"message": "Hello World"})
-    resp.status_code = 200
-    return resp
-
-
-@app.route("/no_content")
-def no_content():
-    return {"message": "No content found"}, 200
-
-@app.route("/not_found")
-def not_found():
-    """return 'No content found' with a status of 204
-
-    Returns:
-        string: No content found
-	    status code: 204
-    """
-    return {"message": "No content found"}, 204
-
-
-
-from flask import Flask, make_response
 app = Flask(__name__)
 
 data = [
@@ -90,52 +57,46 @@ data = [
         "zip": "80305",
         "country": "United States",
         "avatar": "http://dummyimage.com/198x100.png/cc0000/ffffff",
-    }
+    },
 ]
+
+
+@app.route("/")
+def hello_world():
+    resp = make_response({"message": "Hello World"})
+    resp.status_code = 200
+    return resp
+
+
+@app.route("/no_content")
+def no_content():
+    return {"message": "No content found"}, 200
+
+
+@app.route("/not_found")
+def not_found():
+    return {"message": "No content found"}, 204
+
 
 @app.route("/data")
 def get_data():
-    try:
-        # Check if 'data' exists and has a length greater than 0
-        if data and len(data) > 0:
-            # Return a JSON response with a message indicating the length of the data
-            return {"message": f"Data of length {len(data)} found"}
-        else:
-            # If 'data' is empty, return a JSON response with a 500 Internal Server Error status code
-            return {"message": "Data is empty"}, 500
-    except NameError:
-        # Handle the case where 'data' is not defined
-        # Return a JSON response with a 404 Not Found status code
-        return {"message": "Data not found"}, 404
-    
+    if data:
+        return {"message": f"Data of length {len(data)} found"}, 200
+    return {"message": "Data is empty"}, 500
 
-    @app.route("/name_search")
-    def name_search():
-         """Find a person in the database based on the provided query parameter.
 
-    Returns:
-        json: Person if found, with status of 200
-        404: If not found
-        400: If the argument 'q' is missing
-        422: If the argument 'q' is present but invalid (e.g., empty or numeric)
-    """
-         # Get the 'q' query parameter from the URL
-         query = request.args.get("q")
+@app.route("/name_search")
+def name_search():
+    query = request.args.get("q")
 
-        # Check if the query parameter 'q' is missing
-         if query is None:
-            return {"message": "Missing query parameter 'q'"}, 400
+    if query is None:
+        return {"message": "Missing query parameter 'q'"}, 400
 
-        # Check if the query parameter is present but invalid (empty or numeric)
-            if query.strip() == "" or query.isdigit():
-                return {"message": "Invalid input parameter"}, 422
+    if query.strip() == "" or query.isdigit():
+        return {"message": "Invalid input parameter"}, 422
 
-           # Iterate through the 'data' list to search for a matching person
-            for person in data:
-                # Check if the query string is present in the person's first name (case-insensitive)
-                if query.lower() in person["first_name"].lower():
-                # Return the matching person as a JSON response with a 200 OK status code
-                    return person, 200
+    for person in data:
+        if query.lower() in person["first_name"].lower():
+            return person, 200
 
- # If no matching person is found, return a JSON response with a message and a 404 Not Found
     return {"message": "Person not found"}, 404

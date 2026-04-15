@@ -100,3 +100,51 @@ def name_search():
             return person, 200
 
     return {"message": "Person not found"}, 404
+
+
+@app.route("/count")
+def count():
+    try:
+        # Attempt to return a JSON response with the count of items in 'data'
+        # Replace {insert code to find length of data} with len(data) to get the length of the 'data' collection
+        return {"data count": len(data)}, 200
+    except NameError:
+        # If 'data' is not defined and raises a NameError
+        # Return a JSON response with a message and a 500 Internal Server Error status code
+        return {"message": "data not defined"}, 500
+
+@app.route("/person/<uuid:id>")
+def find_by_uuid(id):
+    # Iterate through the 'data' list to search for a person with a matching ID
+    for person in data:
+        # Check if the 'id' field of the person matches the 'id' parameter
+        if person["id"] == str(id):
+            # Return the person as a JSON response if a match is found
+            return person
+
+    # Return a JSON response with a message and a 404 Not Found status code if no matching person is found
+    return {"message": "Person not found"}, 404
+
+@app.route("/person/<uuid:id>", methods=["DELETE"])
+def delete_person(id):
+    for person in data:
+        if person["id"] == str(id):
+            # Remove the person from the 'data' list and return a success message with a 200 OK status code
+            data.remove(person)
+            return {"message": "Person deleted"}, 200
+        return {"message": "Person not found"}, 404
+    
+@app.route("/person", methods=['POST'])
+def add_by_uuid():
+    new_person = request.json
+    if not new_person:
+        return {"message": "Invalid input parameter"}, 422
+    # code to validate new_person ommited
+    try:
+        data.append(new_person)
+    except NameError:
+        return {"message": "data not defined"}, 500
+
+    return {"message": f"{new_person['id']}"}, 200
+
+
